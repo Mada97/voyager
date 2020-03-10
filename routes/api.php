@@ -32,7 +32,7 @@ Route::prefix('v1')->group(function () {
 });
 
 
-// Trips CRUD routes.
+// Trips' routes.
 Route::group(['middleware' => ['auth:api']], function ()
 {
     Route::post('trips', 'Api\TripController@store');
@@ -41,10 +41,11 @@ Route::group(['middleware' => ['auth:api']], function ()
 });
 Route::get('trips', 'Api\TripController@index');
 Route::get('trips/{trip}', 'Api\TripController@show');
+Route::post('trips/search', 'Api\TripController@search');
 
 
-// Offers routes
-Route::group(['middleware' => ['auth:api']], function ()
+// Offers' routes
+Route::group(['middleware' => ['apiGuestUser', 'auth:api']], function ()
 {
     Route::post('offers', 'Api\OfferController@store');
     Route::put('offers/{offer}', 'Api\OfferController@update');

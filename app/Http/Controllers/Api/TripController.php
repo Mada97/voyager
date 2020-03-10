@@ -13,7 +13,7 @@ class TripController extends Controller
     // List all of the trips
     public function index()
     {
-        $trips = Trip::simplePaginate(10);
+        $trips = Trip::OrderBy('created_at', 'desc')->simplePaginate(10);
         return $trips;
     }
 
@@ -73,7 +73,7 @@ class TripController extends Controller
 
         $input = $request->all();
         $trip->update($input);
-        return response()->json(['status' => 'success', 'data' => $trip]);
+        return response()->json(['success' => true, 'data' => $trip]);
     }
 
     // Delete a trip
@@ -83,7 +83,22 @@ class TripController extends Controller
             return response()->json(['status' => 'Forbidden'], 403);
         }
         $trip->delete();
-        return response()->json(['success' => 'true', 'message' => 'Trip deleted successfuly.', 'data' => $trip], 200);
+        return response()->json(['success' => true, 'message' => 'Trip deleted successfuly.', 'data' => $trip], 200);
+    }
+
+    // Search for a trip
+    public function search(Request $request) {
+        $keyword = $request['keyword'];
+
+        $matchingTrips = Trip::where('description', 'LIKE', '%' . $keyword . '%')
+            ->orWhere('from', 'LIKE', '%' . $keyword . '%')
+            ->orWhere('to', 'LIKE', '%' . $keyword . '%')->get();
+
+        if(count($matchingTrips) > 0) {
+            return response()->json(['success' => true, 'data' => $matchingTrips]);
+        } else {
+            return response()->json(['message' => 'No trips found.']);
+        }
     }
 
 }

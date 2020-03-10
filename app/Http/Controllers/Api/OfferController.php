@@ -73,6 +73,6 @@ class OfferController extends Controller
         }
 
         $offer->delete();
-        return response()->json(['success' => 'true', 'message' => 'Offer deleted successfuly.', 'data' => $offer], 200);
+        return response()->json(['success' => 'true', 'message' => 'Offer removed successfully.', 'data' => $offer], 200);
     }
 }
