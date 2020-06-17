@@ -12,6 +12,14 @@ use App\Offer;
 
 class OfferController extends Controller
 {
+    // Show offers for a specefic user
+    public function show() {
+        $user = Auth::user();
+        $offers = Offer::where('user_id', Auth::User()->id)->orderBy('created_at', 'desc')->get();
+
+        return response()->json(['success' => true, 'offers' => $offers]);
+    }
+
     public function store(Request $request)
     {
         $validator = Validator::make(

@@ -21,10 +21,12 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 
 
 // Authentication routes.
-Route::prefix('v1')->group(function () {
+Route::prefix('auth')->group(function () {
     Route::post('login', 'Api\AuthController@login');
     Route::post('register', 'Api\AuthController@register');
+    Route::post('profile/{user}', 'Api\AuthController@profile');
     Route::group(['middleware' => 'auth:api'], function () {
+        Route::post('update', 'Api\AuthController@update');
         Route::post('getUser', 'Api\AuthController@getUser');
         Route::post('logout', 'Api\AuthController@logout');
         Route::post('logoutAllDevices', 'Api\AuthController@logoutFromAllDevices');
@@ -47,7 +49,14 @@ Route::post('trips/search', 'Api\TripController@search');
 // Offers' routes
 Route::group(['middleware' => ['apiGuestUser', 'auth:api']], function ()
 {
+    Route::get('offers', 'Api\OfferController@show');
     Route::post('offers', 'Api\OfferController@store');
     Route::put('offers/{offer}', 'Api\OfferController@update');
     Route::delete('offers/{offer}', 'Api\OfferController@destroy');
 });
+
+// Rating routes
+Route::group(['middleware' => ['auth:api']], function () {
+    Route::post('rates', 'Api\RateController@store');
+});
+Route::get('rates/{user}', 'Api\RateController@user_avg_rating');

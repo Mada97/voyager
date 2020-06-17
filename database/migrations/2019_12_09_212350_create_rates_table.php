@@ -17,7 +17,7 @@ class CreateRatesTable extends Migration
             $table->bigIncrements('id');
             $table->unsignedBigInteger('action_user_id');
             $table->unsignedBigInteger('rated_user_id');
-            $table->double('rating', 1, 1);
+            $table->unsignedTinyInteger('rating');
             $table->timestamps();
 
             $table->foreign('action_user_id')->references('id')->on('users')->onDelete('cascade');

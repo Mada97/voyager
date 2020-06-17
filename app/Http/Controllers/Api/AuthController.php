@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class AuthController extends Controller
 {
@@ -27,13 +28,28 @@ class AuthController extends Controller
                 'gender' => ['required', 'string'],
                 'date_of_birth' => ['required', 'date'],
                 'password' => ['required', 'string', 'min:8', 'confirmed'],
+                'avatar' => ['nullable', 'file']
             ]
         );
         if ($validator->fails())
         {
             return response()->json(['error' => $validator->errors()], 401);
         }
+
         $input = $request->all();
+        // uploading profile picture.
+        if ($request->hasFile('avatar')) {
+            $file = $request->file('avatar');
+            if (!$file->isValid()) {
+                return response()->json(['invalid profile picture.'], 400);
+            }
+            $path = public_path('/uploads/avatars/');
+            $file->move($path, $file->getClientOriginalName());
+            $avatar = Storage::url('uploads/avatars/' . $file->getClientOriginalName());
+            $input['avatar'] = $avatar;
+        }
+        /* XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX */
+
         $input['password'] = bcrypt($input['password']);
         $user = User::create($input);
 
@@ -58,11 +74,65 @@ class AuthController extends Controller
         }
     }
 
+    public function update(Request $request)
+    {
+        $user = Auth::user();
+
+        if($request['email'] == $user->email) {
+            $request->request->remove('email');
+        }
+        if($request['phone_number'] == $user->phone_number) {
+            $request->request->remove('phone_number');
+        }
+        if(empty($request['name'])) {
+            $request->request->remove('name');
+        }
+
+        $validator = Validator::make(
+            $request->all(),
+            [
+                'name' => ['nullable', 'string', 'max:255'],
+                'email' => ['string', 'email', 'max:255', 'unique:users'],
+                'phone_number' => ['nullable', 'regex:/(01)[0-9]{9}/', 'size:11', 'unique:users'],
+                'password' => ['string', 'min:8', 'confirmed'],
+                'avatar' => ['nullable', 'file']
+            ]
+        );
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 401);
+        }
+
+
+        $input = $request->all();
+        // uploading profile picture.
+        if ($request->hasFile('avatar')) {
+            $file = $request->file('avatar');
+            if (!$file->isValid()) {
+                return response()->json(['invalid profile picture.'], 400);
+            }
+            $path = public_path('/uploads/avatars/');
+            $file->move($path, $file->getClientOriginalName());
+            $avatar = Storage::url('uploads/avatars/' . $file->getClientOriginalName());
+            $input['avatar'] = $avatar;
+        }
+        /* XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX */
+
+        $input['password'] = bcrypt($input['password']);
+        $user->update($input);
+
+        return response()->json(['success' => true, 'message' => "Your information has been updated", 'data' => $user]);
+    }
+
     // Get user details
     public function getUser()
     {
         $user = Auth::user();
         return response()->json(['success' => $user], $this->successStatus);
+    }
+
+    // User Profile
+    public function profile(User $user) {
+        return response()->json(['User Data' => $user], $this->successStatus);
     }
 
     // Logout from current device

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Trip;
+use App\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
@@ -14,11 +15,18 @@ class TripController extends Controller
     public function index()
     {
         $trips = Trip::OrderBy('created_at', 'desc')->simplePaginate(10);
+        foreach($trips as $trip) {
+            $username = User::find($trip->user_id)->name;
+            $trip['username'] = $username;
+        }
+
         return $trips;
     }
 
     // Show a single trip
-    public function show(Trip $trip) {
+    public function show(Trip $trip)
+    {
+        $trip['username'] = User::find($trip->user_id)->name;
         return response()->json(['data' => $trip]);
     }
 
