@@ -28,7 +28,7 @@ class AuthController extends Controller
                 'gender' => ['required', 'string'],
                 'date_of_birth' => ['required', 'date'],
                 'password' => ['required', 'string', 'min:8', 'confirmed'],
-                'avatar' => ['nullable', 'file']
+                'avatar' => ['nullable', 'file', 'image']
             ]
         );
         if ($validator->fails())
@@ -45,7 +45,7 @@ class AuthController extends Controller
             }
             $path = public_path('/uploads/avatars/');
             $file->move($path, $file->getClientOriginalName());
-            $avatar = Storage::url('uploads/avatars/' . $file->getClientOriginalName());
+            $avatar = 'uploads/avatars/' . $file->getClientOriginalName();
             $input['avatar'] = $avatar;
         }
         /* XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX */
@@ -70,7 +70,7 @@ class AuthController extends Controller
             return response()->json(['success' => $success], $this->successStatus);
         } else
         {
-            return response()->json(['error' => 'Unauthorised'], 401);
+            return response()->json(['error' => 'Wrong Credentials'], 401);
         }
     }
 
@@ -95,7 +95,7 @@ class AuthController extends Controller
                 'email' => ['string', 'email', 'max:255', 'unique:users'],
                 'phone_number' => ['nullable', 'regex:/(01)[0-9]{9}/', 'size:11', 'unique:users'],
                 'password' => ['string', 'min:8', 'confirmed'],
-                'avatar' => ['nullable', 'file']
+                'avatar' => ['nullable', 'file', 'image']
             ]
         );
         if ($validator->fails()) {
@@ -112,7 +112,7 @@ class AuthController extends Controller
             }
             $path = public_path('/uploads/avatars/');
             $file->move($path, $file->getClientOriginalName());
-            $avatar = Storage::url('uploads/avatars/' . $file->getClientOriginalName());
+            $avatar = 'uploads/avatars/' . $file->getClientOriginalName();
             $input['avatar'] = $avatar;
         }
         /* XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX */
@@ -127,11 +127,13 @@ class AuthController extends Controller
     public function getUser()
     {
         $user = Auth::user();
+        $user->avatar = asset($user->avatar);
         return response()->json(['success' => $user], $this->successStatus);
     }
 
     // User Profile
     public function profile(User $user) {
+        $user->avatar = asset($user->avatar);
         return response()->json(['User Data' => $user], $this->successStatus);
     }
 

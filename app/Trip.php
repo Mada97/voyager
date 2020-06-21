@@ -16,4 +16,8 @@ class Trip extends Model
         'departure_date',
         'description'
     ];
+
+    public function user() {
+        return $this->belongsTo('App\User');
+    }
 }

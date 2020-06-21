@@ -16,8 +16,8 @@ class TripController extends Controller
     {
         $trips = Trip::OrderBy('created_at', 'desc')->simplePaginate(10);
         foreach($trips as $trip) {
-            $username = User::find($trip->user_id)->name;
-            $trip['username'] = $username;
+            $trip['username'] = $trip->user->name;
+            $trip['avatar'] = asset($trip->user->avatar);
         }
 
         return $trips;

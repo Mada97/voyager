@@ -14,4 +14,8 @@ class Offer extends Model
     {
         return $this->belongsTo('App\User', 'user_id');
     }
+    public function trip()
+    {
+        return $this->belongsTo('App\Trip');
+    }
 }

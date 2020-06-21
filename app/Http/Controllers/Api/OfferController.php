@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use App\User;
 use App\Offer;
+use App\Trip;
 
 class OfferController extends Controller
 {
@@ -16,7 +17,10 @@ class OfferController extends Controller
     public function show() {
         $user = Auth::user();
         $offers = Offer::where('user_id', Auth::User()->id)->orderBy('created_at', 'desc')->get();
-
+        foreach($offers as $offer) {
+            $offer['owner'] = $offer->owner;
+            $offer['trip'] = $offer->trip;
+        }
         return response()->json(['success' => true, 'offers' => $offers]);
     }
 
