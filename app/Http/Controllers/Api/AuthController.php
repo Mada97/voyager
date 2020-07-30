@@ -104,6 +104,7 @@ class AuthController extends Controller
 
 
         $input = $request->all();
+
         // uploading profile picture.
         if ($request->hasFile('avatar')) {
             $file = $request->file('avatar');
@@ -128,6 +129,7 @@ class AuthController extends Controller
     {
         $user = Auth::user();
         $user->avatar = asset($user->avatar);
+        $user['trips'] = $user->trips;
         return response()->json(['success' => $user], $this->successStatus);
     }
 

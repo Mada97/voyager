@@ -37,7 +37,6 @@ class RateController extends Controller
 
         $rating = Rate::create($input);
         return response()->json(['success' => true, 'message' => 'Thanks for the feedback!']);
-
     }
 
     // calculate the average rating of a specific user to show it on their profile.

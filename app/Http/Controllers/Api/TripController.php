@@ -8,6 +8,7 @@ use App\Trip;
 use App\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
 
 class TripController extends Controller
 {
@@ -18,6 +19,7 @@ class TripController extends Controller
         foreach($trips as $trip) {
             $trip['username'] = $trip->user->name;
             $trip['avatar'] = asset($trip->user->avatar);
+            $trip['user_rating'] = DB::table('rates')->where('rated_user_id', $trip->user->id)->avg('rating');
         }
 
         return $trips;
@@ -98,11 +100,16 @@ class TripController extends Controller
     public function search(Request $request) {
         $keyword = $request['keyword'];
 
-        $matchingTrips = Trip::where('description', 'LIKE', '%' . $keyword . '%')
+        $matchingTrips = Trip::OrderBy('created_at', 'desc')->where('description', 'LIKE', '%' . $keyword . '%')
             ->orWhere('from', 'LIKE', '%' . $keyword . '%')
             ->orWhere('to', 'LIKE', '%' . $keyword . '%')->get();
 
         if(count($matchingTrips) > 0) {
+            foreach($matchingTrips as $trip) {
+                $trip['username'] = $trip->user->name;
+                $trip['avatar'] = asset($trip->user->avatar);
+                $trip['user_rating'] = DB::table('rates')->where('rated_user_id', $trip->user->id)->avg('rating');
+            }
             return response()->json(['success' => true, 'data' => $matchingTrips]);
         } else {
             return response()->json(['message' => 'No trips found.']);

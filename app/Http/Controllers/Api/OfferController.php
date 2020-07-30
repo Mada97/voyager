@@ -7,19 +7,23 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use App\Notifications\NewOffer;
+use App\Notifications\OfferAccepted;
+use App\Notifications\OfferDeclined;
 use App\User;
 use App\Offer;
 use App\Trip;
 
 class OfferController extends Controller
 {
-    // Show offers for a specefic user
+    // Show offers for the logged in user
     public function show() {
         $user = Auth::user();
         $offers = Offer::where('user_id', Auth::User()->id)->orderBy('created_at', 'desc')->get();
         foreach($offers as $offer) {
-            $offer['owner'] = $offer->owner;
-            $offer['trip'] = $offer->trip;
+            $trip = $offer->trip;
+            $trip['username'] = $offer->trip->user->name;
+            $offer['trip'] = $trip;
         }
         return response()->json(['success' => true, 'offers' => $offers]);
     }
@@ -39,6 +43,12 @@ class OfferController extends Controller
             return response()->json(['success' => false, 'message' => 'Validation failed', 'errors' => $validator->errors()]);
         }
 
+        // A user can't make an offer on his/her own trip.
+        $trip = Trip::find($request['trip_id']);
+        if(Auth::user()->id == $trip->user->id) {
+            return response()->json(['success' => false, 'message' => 'you can\'t make an offer on your own trip.']);
+        }
+
         // Checking if the user already made an offer on this trip.
         $previousOffer = DB::table('offers')->where([['user_id', '=', Auth::User()->id], ['trip_id', '=', $request['trip_id']]])->count();
         if($previousOffer) {
@@ -48,6 +58,10 @@ class OfferController extends Controller
         $input = $request->all();
         $input['user_id'] = Auth::User()->id;
         $offer = Offer::create($input);
+
+        // sending notifications to the user that a new offer was made on his trip.
+        $user = $offer->trip->user;
+        $user->notify(new NewOffer(Auth::user()));
 
         return response()->json(['success' => true, 'data' => $offer], 201);
     }
@@ -86,5 +100,48 @@ class OfferController extends Controller
 
         $offer->delete();
         return response()->json(['success' => 'true', 'message' => 'Offer removed successfully.', 'data' => $offer], 200);
+    }
+
+    // accept or decline an offer
+    public function respondToOffer(Offer $offer, Request $request)
+    {
+        if($offer->trip->user->id != Auth::user()->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You are not authorized to respond to this offer.'
+            ], 401);
+        }
+
+        if($offer->offer_status == 1 OR $offer->offer_status == 2) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You already responded to this offer.'
+            ]);
+        }
+
+        $validator = Validator::make(
+            $request->all(),
+            [
+                'offer_status' => ['required', 'integer', 'min:1', 'max:2']
+            ]
+        );
+
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'message' => 'Validation failed', 'errors' => $validator->errors()]);
+        }
+
+        $offer->offer_status = intval($request->offer_status);
+        $offer->update();
+
+        $user = User::find($offer['user_id']);
+        if($offer->offer_status == 1) {
+            $user->notify(new OfferAccepted($offer->trip->user));
+            return response()->json(['success' => 'true', 'message' => 'You accepted this offer.']);
+        }
+
+        if($offer->offer_status == 2) {
+            $user->notify(new OfferDeclined($offer->trip->user));
+            return response()->json(['success' => 'true', 'message' => 'You declined this offer.']);
+        }
     }
 }

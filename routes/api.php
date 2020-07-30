@@ -53,6 +53,7 @@ Route::group(['middleware' => ['apiGuestUser', 'auth:api']], function ()
     Route::post('offers', 'Api\OfferController@store');
     Route::put('offers/{offer}', 'Api\OfferController@update');
     Route::delete('offers/{offer}', 'Api\OfferController@destroy');
+    Route::post('offers/respond/{offer}', 'Api\OfferController@respondToOffer');
 });
 
 // Rating routes
@@ -60,3 +61,9 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::post('rates', 'Api\RateController@store');
 });
 Route::get('rates/{user}', 'Api\RateController@user_avg_rating');
+
+// Notifications routes.
+Route::group(['middleware' => ['auth:api']], function () {
+    Route::get('notifications', 'Api\NotificationController@show');
+    Route::get('notifications/markRead', 'Api\NotificationController@markAsRead');
+});

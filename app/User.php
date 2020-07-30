@@ -30,6 +30,15 @@ class User extends Authenticatable
         'password', 'remember_token',
     ];
 
+    public function notifications()
+    {
+        // Return sorted notifications
+        return $this->morphMany(Notification::class, "notifiable")
+        // ->whereNull("read_at")
+        // ->orderBy("type", "asc")
+        ->orderBy("created_at", "desc");
+    }
+
     /**
      * The attributes that should be cast to native types.
      *
@@ -41,5 +50,13 @@ class User extends Authenticatable
 
     public function offers() {
         return $this->hasMany('App\Offer');
+    }
+
+    public function trips() {
+        return $this->hasMany('App\Trip');
+    }
+
+    public function rate() {
+        return $this->hasMany('App\Rate');
     }
 }
