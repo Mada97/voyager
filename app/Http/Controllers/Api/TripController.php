@@ -19,7 +19,7 @@ class TripController extends Controller
         foreach($trips as $trip) {
             $trip['username'] = $trip->user->name;
             $trip['avatar'] = asset($trip->user->avatar);
-            $trip['user_rating'] = DB::table('rates')->where('rated_user_id', $trip->user->id)->avg('rating');
+            $trip['user_rating'] = round(DB::table('rates')->where('rated_user_id', $trip->user->id)->avg('rating'), 1);
         }
 
         return $trips;
@@ -108,7 +108,7 @@ class TripController extends Controller
             foreach($matchingTrips as $trip) {
                 $trip['username'] = $trip->user->name;
                 $trip['avatar'] = asset($trip->user->avatar);
-                $trip['user_rating'] = DB::table('rates')->where('rated_user_id', $trip->user->id)->avg('rating');
+                $trip['user_rating'] = round(DB::table('rates')->where('rated_user_id', $trip->user->id)->avg('rating'), 1);
             }
             return response()->json(['success' => true, 'data' => $matchingTrips]);
         } else {

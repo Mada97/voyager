@@ -120,6 +120,7 @@ class AuthController extends Controller
 
         $input['password'] = bcrypt($input['password']);
         $user->update($input);
+        $user->avatar =asset($user->avatar);
 
         return response()->json(['success' => true, 'message' => "Your information has been updated", 'data' => $user]);
     }

@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Trip;
 use App\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -13,15 +14,17 @@ class NewOffer extends Notification
     use Queueable;
 
     public $user;
+    public $trip;
 
     /**
      * Create a new notification instance.
      *
      * @return void
      */
-    public function __construct(User $user)
+    public function __construct(User $user, Trip $trip)
     {
         $this->user = $user;
+        $this->trip = $trip;
     }
 
     /**
@@ -32,7 +35,7 @@ class NewOffer extends Notification
      */
     public function via($notifiable)
     {
-        return ['database', 'broadcast'];
+        return ['database'];
     }
 
     /**
@@ -45,7 +48,8 @@ class NewOffer extends Notification
     {
         return [
             'name' => $this->user->name,
-            'message' => $this->user->name . ' made an offer on your trip.'
+            'message' => $this->user->name . ' made an offer on your trip.',
+            'trip' => $this->trip->id
         ];
     }
 

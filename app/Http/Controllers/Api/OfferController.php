@@ -55,13 +55,21 @@ class OfferController extends Controller
             return response()->json(['success' => false, 'message' => 'You already made an offer on this trip.']);
         }
 
+        // Checking if there are sufficient number of empty seats on the trip
+        if($trip->number_of_empty_seats < $request['number_of_seats_needed']) {
+            return response()->json(['success' => false, 'message' => 'Not enough empty seats on this trip.']);
+        }
+
         $input = $request->all();
         $input['user_id'] = Auth::User()->id;
         $offer = Offer::create($input);
 
+        $trip['number_of_empty_seats'] -= $request['number_of_seats_needed'];
+        $trip->update();
+
         // sending notifications to the user that a new offer was made on his trip.
         $user = $offer->trip->user;
-        $user->notify(new NewOffer(Auth::user()));
+        $user->notify(new NewOffer(Auth::user(), $trip));
 
         return response()->json(['success' => true, 'data' => $offer], 201);
     }
@@ -99,6 +107,9 @@ class OfferController extends Controller
         }
 
         $offer->delete();
+        $offer->trip['number_of_empty_seats'] += $offer['number_of_seats_needed'];
+        $offer->trip->update();
+
         return response()->json(['success' => 'true', 'message' => 'Offer removed successfully.', 'data' => $offer], 200);
     }
 

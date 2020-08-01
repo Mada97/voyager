@@ -22,6 +22,6 @@ class Rate extends Model
             $userRating = DB::table('rates')->where('rated_user_id', $user->id)->avg('rating');
         }
 
-        return $userRating;
+        return round($userRating, 1);
     }
 }

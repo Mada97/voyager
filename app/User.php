@@ -30,14 +30,7 @@ class User extends Authenticatable
         'password', 'remember_token',
     ];
 
-    public function notifications()
-    {
-        // Return sorted notifications
-        return $this->morphMany(Notification::class, "notifiable")
-        // ->whereNull("read_at")
-        // ->orderBy("type", "asc")
-        ->orderBy("created_at", "desc");
-    }
+
 
     /**
      * The attributes that should be cast to native types.

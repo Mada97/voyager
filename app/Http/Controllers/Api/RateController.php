@@ -47,6 +47,6 @@ class RateController extends Controller
             $userRating = DB::table('rates')->where('rated_user_id', $user->id)->avg('rating');
         }
 
-        return response()->json(['rating' => $userRating]);
+        return response()->json(['rating' => round($userRating, 1)]);
     }
 }
