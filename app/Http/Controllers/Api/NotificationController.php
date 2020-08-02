@@ -15,7 +15,13 @@ class NotificationController extends Controller
     public function show()
     {
         $user = Auth::user();
-        return response()->json(['notifications' => $user->notifications]);
+        $notifications = $user->notifications;
+        foreach($notifications as $notif) {
+            $data = $notif->data;
+            $data['avatar'] = asset($data['avatar']);
+            $notif->data = $data;
+        }
+        return response()->json(['notifications' => $notifications ]);
     }
 
     public function markAsRead()

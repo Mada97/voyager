@@ -29,6 +29,7 @@ class TripController extends Controller
     public function show(Trip $trip)
     {
         $trip['username'] = User::find($trip->user_id)->name;
+        $trip['offers'] = $trip->offers;
         return response()->json(['data' => $trip]);
     }
 

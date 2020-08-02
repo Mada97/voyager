@@ -68,8 +68,8 @@ class OfferController extends Controller
         $trip->update();
 
         // sending notifications to the user that a new offer was made on his trip.
-        $user = $offer->trip->user;
-        $user->notify(new NewOffer(Auth::user(), $trip));
+        $notifiableUser = $offer->trip->user;
+        $notifiableUser->notify(new NewOffer($offer->owner, $trip));
 
         return response()->json(['success' => true, 'data' => $offer], 201);
     }

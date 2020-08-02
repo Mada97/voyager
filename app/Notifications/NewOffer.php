@@ -44,12 +44,13 @@ class NewOffer extends Notification
      * @param  mixed  $notifiable
      * @return array
      */
-    public function toArray($notifiable)
+    public function toDatabase($notifiable)
     {
         return [
             'name' => $this->user->name,
             'message' => $this->user->name . ' made an offer on your trip.',
-            'trip' => $this->trip->id
+            'trip' => $this->trip->id,
+            'avatar' => $this->user->avatar
         ];
     }
 
