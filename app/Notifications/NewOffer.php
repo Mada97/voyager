@@ -48,7 +48,7 @@ class NewOffer extends Notification
     {
         return [
             'name' => $this->user->name,
-            'message' => $this->user->name . ' made an offer on your trip.',
+            'message' => $this->user->name . ' made an offer on your trip to ' . $this->trip->to . '.',
             'trip' => $this->trip->id,
             'avatar' => $this->user->avatar
         ];

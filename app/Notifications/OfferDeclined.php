@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Notifications;
+use App\User;
+use App\Trip;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -11,15 +13,16 @@ class OfferDeclined extends Notification
 {
     use Queueable;
 
-    public $user;
+    public $user, $trip;
     /**
      * Create a new notification instance.
      *
      * @return void
      */
-    public function __construct(User $user)
+    public function __construct(User $user, Trip $trip)
     {
         $this->user = $user;
+        $this->trip = $trip;
     }
 
     /**
@@ -38,7 +41,9 @@ class OfferDeclined extends Notification
     {
         return [
             'name' => $this->user->name,
-            'message' => $this->user->name . ' declined your offer on his trip.'
+            'message' => $this->user->name . ' declined your offer on his trip to ' . $this->trip->to . '.',
+            'trip' => $this->trip->id,
+            'avatar' => $this->user->avatar
         ];
     }
 }

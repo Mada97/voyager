@@ -144,14 +144,14 @@ class OfferController extends Controller
         $offer->offer_status = intval($request->offer_status);
         $offer->update();
 
-        $user = User::find($offer['user_id']);
+        $user = $offer->owner;
         if($offer->offer_status == 1) {
-            $user->notify(new OfferAccepted($offer->trip->user));
+            $user->notify(new OfferAccepted($offer->trip->user, $offer->trip));
             return response()->json(['success' => 'true', 'message' => 'You accepted this offer.']);
         }
 
         if($offer->offer_status == 2) {
-            $user->notify(new OfferDeclined($offer->trip->user));
+            $user->notify(new OfferDeclined($offer->trip->user, $offer->trip));
             return response()->json(['success' => 'true', 'message' => 'You declined this offer.']);
         }
     }

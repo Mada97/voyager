@@ -30,6 +30,9 @@ class TripController extends Controller
     {
         $trip['username'] = User::find($trip->user_id)->name;
         $trip['offers'] = $trip->offers;
+        foreach ($trip['offers'] as $offer) {
+            $offer['username'] = $offer->owner->name;
+        }
         return response()->json(['data' => $trip]);
     }
 
