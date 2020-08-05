@@ -14,6 +14,14 @@ class RateController extends Controller
 {
     public function store(Request $request)
     {
+        // checking if these two users are allowed to rate each other.
+        $canRate = DB::table('users_that_can_rate_one_another')->where([['user1_id', '=', Auth::user()->id],['user2_id', '=', $request['rated_user_id']]])
+            ->orWhere([['user1_id', '=', $request['rated_user_id']], ['user2_id', '=', Auth::user()->id]])->count();
+
+        if($canRate == 0) {
+            return response()->json(['success' => false, 'message' => 'You cant rate this user']);
+        }
+
         $validator = Validator::make(
             $request->all(),
             [
@@ -25,6 +33,7 @@ class RateController extends Controller
         if ($validator->fails()) {
             return response()->json(['status' => 'Validation failure', 'errors' => $validator->errors()]);
         }
+
 
         // Checking if the logged in user has rated the other user before.
         $previousRate = DB::table('rates')->where([['action_user_id', '=', Auth::user()->id], ['rated_user_id', '=', $request['rated_user_id']]]);

@@ -102,11 +102,20 @@ class TripController extends Controller
 
     // Search for a trip
     public function search(Request $request) {
-        $keyword = $request['keyword'];
+        $validator = Validator::make(
+            $request->all(),
+            [
+                'from' => ['required', 'string', 'min:3', 'max:255'],
+                'to' => ['required', 'string', 'min:3', 'max:255'],
+            ]
+        );
 
-        $matchingTrips = Trip::OrderBy('created_at', 'desc')->where('description', 'LIKE', '%' . $keyword . '%')
-            ->orWhere('from', 'LIKE', '%' . $keyword . '%')
-            ->orWhere('to', 'LIKE', '%' . $keyword . '%')->get();
+        if ($validator->fails()) {
+            return response()->json(['status' => 'Validation failure', 'errors' => $validator->errors()]);
+        }
+
+        $matchingTrips = Trip::OrderBy('created_at', 'desc')->where('from', 'LIKE', '%' . $request['from'] . '%')
+            ->where('to', 'LIKE', '%' . $request['to'] . '%')->get();
 
         if(count($matchingTrips) > 0) {
             foreach($matchingTrips as $trip) {

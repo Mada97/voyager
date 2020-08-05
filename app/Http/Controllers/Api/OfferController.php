@@ -55,7 +55,7 @@ class OfferController extends Controller
             return response()->json(['success' => false, 'message' => 'You already made an offer on this trip.']);
         }
 
-        // Checking if there are sufficient number of empty seats on the trip
+        // Checking if there are sufficient number of empty seats on the trip.
         if($trip->number_of_empty_seats < $request['number_of_seats_needed']) {
             return response()->json(['success' => false, 'message' => 'Not enough empty seats on this trip.']);
         }
@@ -64,8 +64,7 @@ class OfferController extends Controller
         $input['user_id'] = Auth::User()->id;
         $offer = Offer::create($input);
 
-        $trip['number_of_empty_seats'] -= $request['number_of_seats_needed'];
-        $trip->update();
+
 
         // sending notifications to the user that a new offer was made on his trip.
         $notifiableUser = $offer->trip->user;
@@ -78,6 +77,10 @@ class OfferController extends Controller
     {
         if ($offer->user_id != Auth::guard('api')->id()) {
             return response()->json(['status' => 'Forbidden'], 403);
+        }
+
+        if($offer->offer_status != 0) {
+            return response()->json(['success' => false, 'message' => 'You cant edit this offer because the trip owner already responded to it.']);
         }
 
         $validator = Validator::make(
@@ -108,9 +111,10 @@ class OfferController extends Controller
 
         $offer->delete();
         $offer->trip['number_of_empty_seats'] += $offer['number_of_seats_needed'];
+        $offer->trip->trip_status = 0;
         $offer->trip->update();
 
-        return response()->json(['success' => 'true', 'message' => 'Offer removed successfully.', 'data' => $offer], 200);
+        return response()->json(['success' => true, 'message' => 'Offer removed successfully.', 'data' => $offer], 200);
     }
 
     // accept or decline an offer
@@ -145,8 +149,18 @@ class OfferController extends Controller
         $offer->update();
 
         $user = $offer->owner;
+        $trip = $offer->trip;
         if($offer->offer_status == 1) {
             $user->notify(new OfferAccepted($offer->trip->user, $offer->trip));
+            $trip['number_of_empty_seats'] -= $offer['number_of_seats_needed'];
+            if($trip['number_of_empty_seats'] == 0) {
+                $trip->trip_status = 1;
+            }
+            $trip->update();
+
+            // Now the two users can rate each other.
+            DB::table('users_that_can_rate_one_another')->insertOrIgnore(['user1_id' => $user->id, 'user2_id' => $offer->trip->user->id]);
+
             return response()->json(['success' => 'true', 'message' => 'You accepted this offer.']);
         }
 
