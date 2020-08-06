@@ -87,6 +87,9 @@ class TripController extends Controller
 
         $input = $request->all();
         $trip->update($input);
+        if($trip->number_of_empty_seats > 0) {
+            $trip->trip_status = 0;
+        }
         return response()->json(['success' => true, 'data' => $trip]);
     }
 
