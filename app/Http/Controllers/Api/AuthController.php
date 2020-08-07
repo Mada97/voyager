@@ -33,7 +33,7 @@ class AuthController extends Controller
         );
         if ($validator->fails())
         {
-            return response()->json(['error' => $validator->errors()], 401);
+            return response()->json(['errors' => $validator->errors()], 401);
         }
 
         $input = $request->all();
@@ -87,6 +87,9 @@ class AuthController extends Controller
         if(empty($request['name'])) {
             $request->request->remove('name');
         }
+        if(empty($request['password'])) {
+                    $request->request->remove('password');
+                }
 
         $validator = Validator::make(
             $request->all(),
@@ -94,7 +97,7 @@ class AuthController extends Controller
                 'name' => ['nullable', 'string', 'max:255'],
                 'email' => ['string', 'email', 'max:255', 'unique:users'],
                 'phone_number' => ['nullable', 'regex:/(01)[0-9]{9}/', 'size:11', 'unique:users'],
-                'password' => ['string', 'min:8', 'confirmed'],
+                'password' => ['nullable', 'string', 'min:8', 'confirmed'],
                 'avatar' => ['nullable', 'file', 'image']
             ]
         );
@@ -117,8 +120,9 @@ class AuthController extends Controller
             $input['avatar'] = $avatar;
         }
         /* XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX */
-
-        $input['password'] = bcrypt($input['password']);
+        if($request->has('password')) {
+            $input['password'] = bcrypt($input['password']);
+        }
         $user->update($input);
         $user->avatar =asset($user->avatar);
 
