@@ -71,12 +71,9 @@ class TripController extends Controller
         $validator = Validator::make(
             $request->all(),
             [
-                'from' => ['required', 'string', 'min:3', 'max:255'],
-                'to' => ['required', 'string', 'min:3', 'max:255'],
                 'car_model' => ['required', 'string', 'max:255'],
                 'price_per_passenger' => ['required', 'integer'],
                 'number_of_empty_seats' => ['required', 'integer', 'min:1'],
-                'departure_date' => ['required', 'date', 'after:today'],
                 'description' => ['nullable', 'min:10', 'max:255']
             ]
         );
