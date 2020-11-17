@@ -157,7 +157,7 @@ class AuthController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Unable to logout.'
-            ]);
+            ], 401);
         }
     }
 
